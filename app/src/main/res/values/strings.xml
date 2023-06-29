@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">FilmSearcher</string>
+    <string name="search">Найти</string>
+    <string name="write_films_title">Введите название фильма</string>
+</resources>

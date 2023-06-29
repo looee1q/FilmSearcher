@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/BusStopBot" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Kotlin-Module-Project" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Kotlin-Module-Project2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/PlaylistMaker" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/android-contacts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/android-contacts-interfaces-lab" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/studying_git" vcs="Git" />
+  </component>
+</project>
