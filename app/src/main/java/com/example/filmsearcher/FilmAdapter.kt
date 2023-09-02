@@ -9,6 +9,8 @@ class FilmAdapter(
     val films: MutableList<Film>
 ): RecyclerView.Adapter<FilmViewHolder>() {
 
+    var clickListener: MovieClickListener? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.film_description, parent, false)
         return FilmViewHolder(view)
@@ -20,5 +22,10 @@ class FilmAdapter(
 
     override fun onBindViewHolder(holder: FilmViewHolder, position: Int) {
         holder.bind(films[position])
+        holder.itemView.setOnClickListener { clickListener?.onMovieClick(films[position]) }
+    }
+
+    fun interface MovieClickListener {
+        fun onMovieClick(film: Film)
     }
 }

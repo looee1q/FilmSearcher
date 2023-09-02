@@ -1,20 +1,30 @@
 package com.example.filmsearcher
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 
+const val POSTER = "POSTER"
+
 class MainActivity : AppCompatActivity() {
 
-    lateinit var searchButton: Button
     lateinit var editTextFilmsSearcher: EditText
     lateinit var recyclerViewFilmsList: RecyclerView
+    lateinit var errorMessage: TextView
+    lateinit var progressBar: ProgressBar
 
 //    private val filmsMock = listOf(Film("", "The Lord of the Rings: The Rings of Power", "2022- TV Series Morfydd Clark, Ismael Cruz Cordova"),
 //        Film("", "The Lord of the Rings: The Fellowship of the Ring", "2001 Elijah Wood, Ian McKellen"),
@@ -22,11 +32,13 @@ class MainActivity : AppCompatActivity() {
 //        Film("https://upload.wikimedia.org/wikipedia/en/f/fc/The_Lord_of_the_Rings%2C_T2T_%282002%29.jpg",
 //            "The Lord of the Rings: The Two Towers", "2003 Elijah Wood, Ian McKellen, Liv Tyler"))
 
-    private val apiKey = "k_j0oge517"
+    private val apiKey = "k_zcuw1ytf"
     private val baseUrl = "https://imdb-api.com"
 
     private val films = mutableListOf<Film>()
     private val adapter = FilmAdapter(films)
+
+    private var searchRequest: String = ""
 
     private val retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
@@ -35,58 +47,84 @@ class MainActivity : AppCompatActivity() {
 
     val imdApi = retrofit.create(ImdApi::class.java)
 
+    private val debouncer = Debouncer()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        searchButton = findViewById<Button>(R.id.search_button)
         editTextFilmsSearcher = findViewById<EditText>(R.id.edit_text_film_searcher)
-        recyclerViewFilmsList = findViewById(R.id.recycler_view_films_list)
+        recyclerViewFilmsList = findViewById<RecyclerView>(R.id.recycler_view_films_list)
+        errorMessage = findViewById<TextView>(R.id.error_message)
+        progressBar = findViewById<ProgressBar>(R.id.progress_bar)
+
+        adapter.clickListener = FilmAdapter.MovieClickListener { film ->
+            if (debouncer.clickDebounce()) {
+                val intent = Intent(this@MainActivity, PosterActivity::class.java)
+                intent.putExtra(POSTER, film.filmPoster)
+                startActivity(intent)
+            }
+        }
 
         recyclerViewFilmsList.adapter = adapter
         recyclerViewFilmsList.layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.VERTICAL, false)
 
-        searchButton.setOnClickListener {
+        debouncer.searchRunnable = Runnable {
+            progressBar.visibility = View.VISIBLE
 
-            imdApi.search(apiKey, editTextFilmsSearcher.text.toString()).enqueue(object : Callback<FilmsResponse> {
+            imdApi.search(apiKey, searchRequest).enqueue(object : Callback<FilmsResponse> {
                 override fun onResponse(call: Call<FilmsResponse>,
                                         response: Response<FilmsResponse>) {
+                    progressBar.visibility = View.GONE
                     if (response.isSuccessful) {
-                        if(response.body()?.foundFilms?.isNotEmpty() == true) {
+                        if (response.body()?.foundFilms?.isNotEmpty() == true) {
                             adapter.films.clear()
                             adapter.films.addAll(response.body()?.foundFilms.orEmpty())
                             adapter.notifyDataSetChanged()
-
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Successful!!!",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            showMessage("", "Successful response!!!")
+                            Log.d("THREAD", "${Thread.currentThread().name}")
                         } else {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Пусто, капуста ${editTextFilmsSearcher.text}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            showMessage(getString(R.string.nothing_found), "Пусто, капуста!")
                         }
                     } else {
-                        Toast.makeText(
-                            this@MainActivity,
-                            response.errorBody()?.toString() + "\nNotSuccessful",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        showMessage(getString(R.string.something_went_wrong), response.errorBody()?.toString() ?: "")
                     }
                 }
 
                 override fun onFailure(call: Call<FilmsResponse>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    progressBar.visibility = View.GONE
+                    showMessage(getString(R.string.something_went_wrong), t.message.toString())
                 }
             })
         }
 
+        editTextFilmsSearcher.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
+            override fun onTextChanged(input: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if (input?.isNotBlank() == true) {
+                    searchRequest = input.toString()
+                }
+                debouncer.searchDebounce()
+            }
 
+            override fun afterTextChanged(p0: Editable?) {}
+        })
+    }
 
+    fun showMessage(message: String, extraInformation: String) {
+        if (message.isNotEmpty()) {
+            films.clear()
+            adapter.notifyDataSetChanged()
+            errorMessage.text = message
+            errorMessage.visibility = View.VISIBLE
 
+            if(extraInformation.isNotEmpty()) {
+                Toast.makeText(this, extraInformation, Toast.LENGTH_SHORT).show()
+            }
+        }
+        else {
+            errorMessage.visibility = View.GONE
+        }
     }
 }

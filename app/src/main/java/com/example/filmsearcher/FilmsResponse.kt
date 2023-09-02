@@ -1,3 +1,5 @@
 package com.example.filmsearcher
 
-class FilmsResponse(val foundFilms: List<Film>)
+import com.google.gson.annotations.SerializedName
+
+class FilmsResponse(@SerializedName("results") val foundFilms: List<Film>)

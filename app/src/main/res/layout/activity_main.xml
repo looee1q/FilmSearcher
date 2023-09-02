@@ -26,7 +26,7 @@
             android:maxLines="1"
             android:textColor="@color/black"
             app:backgroundTint="@color/search_line"/>
-        <Button
+<!--        <Button
             android:id="@+id/search_button"
             android:layout_width="0dp"
             android:layout_height="36dp"
@@ -37,8 +37,15 @@
             app:cornerRadius="4dp"
             android:backgroundTint="@color/gray"
             android:text="@string/search"
-            android:textSize="12sp"/>
+            android:textSize="12sp"/>-->
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_films_list"
@@ -46,6 +53,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"/>
 
-
+    <TextView
+        android:id="@+id/error_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textSize="22sp"
+        android:layout_gravity="center"
+        android:visibility="visible"
+        tools:text="Ошибка!"/>
 
 </LinearLayout>

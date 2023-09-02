@@ -1,3 +1,3 @@
 package com.example.filmsearcher
 
-data class FilmRequest(val expression: String)
+//data class FilmRequest(val expression: String)
